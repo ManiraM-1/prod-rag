@@ -76,19 +76,6 @@ SCOPE_CHECK_PROMPT = (
 
 
 def initialize_rails() -> None:
-<<<<<<< Updated upstream
-    """
-    Build the NeMo LLMRails singleton at app startup.
-    Uses llama-3.1-8b-instant for fast intent classification at the gate,
-    the heavier llama-3.3-70b-versatile is reserved for the RAG pipeline.
-    """
-    global _rails
-
-    guard_llm = ChatGroq(
-        api_key=settings.GROQ_API_KEY,
-        model="llama-3.1-8b-instant",
-        temperature=0
-=======
     """Build the guardrails LLM singleton at app startup."""
     global _guard_llm
     _guard_llm = _NonReasoningChatGroq(
@@ -97,17 +84,10 @@ def initialize_rails() -> None:
         temperature=0,
         reasoning_effort="low",
         model_kwargs={"include_reasoning": False},
->>>>>>> Stashed changes
     )
     logfire.info("🛡️ Guardrails initialised (deterministic dialog gate + LLM scope check).")
 
 
-<<<<<<< Updated upstream
-    _rails = LLMRails(config, llm=guard_llm)
-    logfire.info("🛡️ NeMo Guardrails initialised (llama-3.1-8b-instant).")
-    
-    
-=======
 def _normalize(message: str) -> str:
     return message.strip().lower().rstrip("!.?")
 
@@ -115,7 +95,6 @@ def _normalize(message: str) -> str:
 def _matches_any(message: str, phrases: set[str]) -> bool:
     normalized = _normalize(message)
     return normalized in phrases or any(phrase in normalized for phrase in phrases)
->>>>>>> Stashed changes
 
 
 def guard(message: str) -> tuple[bool, str | None]:

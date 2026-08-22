@@ -6,7 +6,7 @@ from app.config import settings
 
 
 # Production gateway config:
-#   - Fallback: primary @prod-rag/llama-3.3-70b-versatile → @prod-rag1/llama-3.1-8b-instant on failure
+#   - Fallback: primary @prod-rag/openai/gpt-oss-120b → @prod-rag1/openai/gpt-oss-20b on failure
 #   - Cache: semantic mode (requires Portkey Enterprise — silently falls back to simple on free/starter)
 #   - Retry: 2 attempts on rate limit / server error before triggering the fallback target
 GATEWAY_CONFIG = {
@@ -17,14 +17,14 @@ GATEWAY_CONFIG = {
         "on_status_codes": [429, 503]
     },
     "targets": [
-        {"override_params": {"model": f"@{settings.GROQ_SLUG}/llama-3.3-70b-versatile"}},
-        {"override_params": {"model": f"@{settings.GROQ_SLUG_2}/llama-3.1-8b-instant"}},
+        {"override_params": {"model": f"@{settings.GROQ_SLUG}/openai/gpt-oss-120b"}},
+        {"override_params": {"model": f"@{settings.GROQ_SLUG_2}/openai/gpt-oss-20b"}},
     ]
 }
 
 portkey_client = Portkey(
     api_key=settings.PORTKEY_API_KEY,
-    config=GATEWAY_CONFIG
+    # config=GATEWAY_CONFIG  # blocked: this org's keys require a saved dashboard Config, not inline JSON
 )
 
 
@@ -42,11 +42,11 @@ def get_langchain_llm(feature: str = "prod-rag") -> ChatOpenAI:
     return ChatOpenAI(
         api_key=settings.PORTKEY_API_KEY,
         base_url=PORTKEY_GATEWAY_URL,
-        model=f"@{settings.GROQ_SLUG}/llama-3.3-70b-versatile",
+        model=f"@{settings.GROQ_SLUG}/openai/gpt-oss-120b",
         temperature=0,
         default_headers=createHeaders(
             api_key=settings.PORTKEY_API_KEY,
-            config=GATEWAY_CONFIG,
+            # config=GATEWAY_CONFIG,  # blocked: this org's keys require a saved dashboard Config, not inline JSON
             metadata={
                 "feature": feature,
                 "_user": "rag-system",
