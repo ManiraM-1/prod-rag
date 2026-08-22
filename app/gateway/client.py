@@ -24,7 +24,7 @@ GATEWAY_CONFIG = {
 
 portkey_client = Portkey(
     api_key=settings.PORTKEY_API_KEY,
-    config=GATEWAY_CONFIG
+    # config=GATEWAY_CONFIG  # blocked: this org's keys require a saved dashboard Config, not inline JSON
 )
 
 
@@ -46,7 +46,7 @@ def get_langchain_llm(feature: str = "prod-rag") -> ChatOpenAI:
         temperature=0,
         default_headers=createHeaders(
             api_key=settings.PORTKEY_API_KEY,
-            config=GATEWAY_CONFIG,
+            # config=GATEWAY_CONFIG,  # blocked: this org's keys require a saved dashboard Config, not inline JSON
             metadata={
                 "feature": feature,
                 "_user": "rag-system",
