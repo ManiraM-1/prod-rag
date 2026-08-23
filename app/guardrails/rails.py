@@ -92,9 +92,26 @@ def _normalize(message: str) -> str:
     return message.strip().lower().rstrip("!.?")
 
 
-def _matches_any(message: str, phrases: set[str]) -> bool:
+def _is_exact_phrase(message: str, phrases: set[str]) -> bool:
+    """Strict match: the whole message must equal one of the phrases.
+
+    Used for greeting/farewell/capabilities — short common words like "hi" or
+    "hey" would otherwise false-positive as substrings inside real questions
+    (e.g. "hi, whats kubernetes" contains "hi").
+    """
+    return _normalize(message) in phrases
+
+
+def _contains_phrase(message: str, phrases: set[str]) -> bool:
+    """Loose match: fires if any phrase appears anywhere in the message.
+
+    Used for jailbreak phrases only — these are distinctive multi-word strings
+    ("ignore all previous instructions") that legitimately show up embedded
+    mid-sentence in an attack, and are in no danger of appearing incidentally
+    inside a real question.
+    """
     normalized = _normalize(message)
-    return normalized in phrases or any(phrase in normalized for phrase in phrases)
+    return any(phrase in normalized for phrase in phrases)
 
 
 def guard(message: str) -> tuple[bool, str | None]:
@@ -106,19 +123,19 @@ def guard(message: str) -> tuple[bool, str | None]:
         (False, None)     — message is clean and in-scope; proceed to LangGraph.
     """
     with logfire.span("🛡️ Guardrails Check", query=message[:80]):
-        if _matches_any(message, JAILBREAK_PHRASES):
+        if _contains_phrase(message, JAILBREAK_PHRASES):
             logfire.error(f"❌ Guardrails fired | reason=jailbreak | query='{message[:80]}'")
             return True, JAILBREAK_RESPONSE
 
-        if _matches_any(message, GREETING_PHRASES):
+        if _is_exact_phrase(message, GREETING_PHRASES):
             logfire.error(f"❌ Guardrails fired | reason=greeting | query='{message[:80]}'")
             return True, GREETING_RESPONSE
 
-        if _matches_any(message, FAREWELL_PHRASES):
+        if _is_exact_phrase(message, FAREWELL_PHRASES):
             logfire.error(f"❌ Guardrails fired | reason=farewell | query='{message[:80]}'")
             return True, FAREWELL_RESPONSE
 
-        if _matches_any(message, CAPABILITIES_PHRASES):
+        if _is_exact_phrase(message, CAPABILITIES_PHRASES):
             logfire.error(f"❌ Guardrails fired | reason=capabilities | query='{message[:80]}'")
             return True, CAPABILITIES_RESPONSE
 
