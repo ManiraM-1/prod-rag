@@ -97,7 +97,12 @@ if prompt := st.chat_input("Ask about your documentation..."):
                     for step in steps:
                         st.write(f"⚙️ {step}")
                     
-                    status.update(label="✅ Answer Synthesized", state="complete", expanded=False)
+                    blocked = data.get("status") == "Blocked by guardrails."
+                    status.update(
+                        label="🛡️ Blocked by Guardrails" if blocked else "✅ Answer Synthesized",
+                        state="complete",
+                        expanded=blocked,
+                    )
                     
                     # --- SHOW SOURCES (NESTED EXPANDABLES) ---
                     sources = data.get("sources", [])

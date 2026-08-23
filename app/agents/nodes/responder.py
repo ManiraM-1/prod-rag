@@ -1,6 +1,6 @@
 import logfire
 from app.agents.state import AgentState
-from app.gateway import portkey_client, extract_cache_status
+from app.gateway import portkey_client, extract_cache_status, strip_reasoning
 
 
 def generate_node(state: AgentState):
@@ -62,7 +62,7 @@ def generate_node(state: AgentState):
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1
             )
-            content = response.choices[0].message.content
+            content = strip_reasoning(response.choices[0].message.content)
             cache_status = extract_cache_status(response)
             is_cache_hit = cache_status == "HIT"
 
