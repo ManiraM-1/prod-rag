@@ -23,6 +23,11 @@ JAILBREAK_PHRASES = {
     "your new instructions are", "disregard your training", "developer mode", "override your safety filters",
     "bypass your guidelines", "act as an unrestricted ai",
 }
+MEMORY_QUESTION_PHRASES = {
+    "my previous question", "my last question", "what did i ask", "what did i just ask",
+    "what was my question", "my name", "what did you say", "what did we discuss",
+    "what did we talk about", "earlier you said", "you just said", "what have we talked about",
+}
 
 GREETING_RESPONSE = (
     "Hello! I'm your Enterprise IT Assistant. I specialise in Kubernetes, Intel hardware, "
@@ -115,6 +120,10 @@ def guard(message: str) -> tuple[bool, str | None]:
         if _is_exact_phrase(message, CAPABILITIES_PHRASES):
             logfire.error(f"❌ Guardrails fired | reason=capabilities | query='{message[:80]}'")
             return True, CAPABILITIES_RESPONSE
+
+        if _contains_phrase(message, MEMORY_QUESTION_PHRASES):
+            logfire.info(f"✅ Guardrails passed | reason=memory_question | query='{message[:80]}'")
+            return False, None
 
         if _guard_llm is None:
             logfire.warning("⚠️ Guardrails not initialised — skipping scope check.")

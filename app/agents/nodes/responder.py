@@ -24,6 +24,11 @@ def generate_node(state: AgentState):
         You are a friendly and helpful Enterprise AI Assistant.
         Answer the user's latest message using the CONVERSATION HISTORY below.
 
+        Answer directly and concisely. Do not restate the question, add
+        unnecessary preamble, or pad the response with extra elaboration
+        beyond what's needed to answer accurately. Prefer 2-5 sentences
+        unless the question genuinely requires a longer explanation.
+
         CONVERSATION HISTORY:
         {history_str}
 
@@ -45,6 +50,12 @@ def generate_node(state: AgentState):
         prompt = f"""
         You are a Senior Technical Architect.
         Answer the question using the TECHNICAL CONTEXT provided.
+
+        Answer directly and concisely. Do not restate the question, add
+        unnecessary preamble, or pad the response with extra elaboration
+        beyond what's needed to answer accurately. Prefer 2-5 sentences
+        unless the question genuinely requires a longer explanation (e.g.
+        step-by-step instructions).
 
         TECHNICAL CONTEXT:
         {full_context}
