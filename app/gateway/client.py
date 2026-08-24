@@ -1,8 +1,38 @@
+import re
+
 import logfire
 from portkey_ai import Portkey, createHeaders, PORTKEY_GATEWAY_URL
 from langchain_openai import ChatOpenAI
+from langchain_core.outputs import ChatResult
 
 from app.config import settings
+
+
+_THINK_BLOCK = re.compile(r"<think>.*?</think>\s*", re.DOTALL)
+
+
+def strip_reasoning(text: str) -> str:
+    """
+    Strip any leaked <think>...</think> block from a reasoning model's raw output.
+
+    Groq's gpt-oss models are reasoning models: even with include_reasoning=False,
+    the chain-of-thought can still leak into the response text instead of being
+    suppressed or kept in a separate field. Any code that does exact/strict parsing
+    of raw model output (e.g. checking `decision == "CONVERSATIONAL"`, or a
+    yes/no verdict prefix) breaks silently if this leaks in unstripped — so this
+    is applied centrally rather than left to each caller to remember.
+    """
+    return _THINK_BLOCK.sub("", text).strip()
+
+
+class _NonReasoningChatOpenAI(ChatOpenAI):
+    """ChatOpenAI subclass that strips leaked <think> blocks from every response."""
+
+    def _generate(self, *args, **kwargs) -> ChatResult:
+        result = super()._generate(*args, **kwargs)
+        for generation in result.generations:
+            generation.message.content = strip_reasoning(generation.message.content)
+        return result
 
 
 # Production gateway config:
@@ -25,10 +55,21 @@ GATEWAY_CONFIG = {
 portkey_client = Portkey(
     api_key=settings.PORTKEY_API_KEY,
     # config=GATEWAY_CONFIG  # blocked: this org's keys require a saved dashboard Config, not inline JSON
+).with_options(
+    metadata={
+        "feature": "prod-rag",
+        "_user": "rag-system",
+        "environment": "dev",
+    }
 )
 
 
-def get_langchain_llm(feature: str = "prod-rag") -> ChatOpenAI:
+def get_langchain_llm(
+    feature: str = "prod-rag",
+    model: str | None = None,
+    temperature: float = 0,
+    extra_body: dict | None = None,
+) -> _NonReasoningChatOpenAI:
     """
     Returns a Portkey-backed ChatOpenAI, a drop-in for ChatGroq in LangChain nodes.
 
@@ -38,12 +79,19 @@ def get_langchain_llm(feature: str = "prod-rag") -> ChatOpenAI:
       ChatOpenAI supports base_url (points at Portkey) and default_headers (passes Portkey
       auth + config). The @prod-rag/model-name format is Portkey-specific, Groq's own client
       does not understand it. You are still using Groq models; Portkey is just in the middle.
+
+    Every LLM call in this app — RAG pipeline or guardrails — goes through this
+    one factory, so nothing bypasses Portkey's cost tracking, failover, and logs.
+    `model`/`extra_body` let callers override the default model and pass extra
+    provider-specific request fields (e.g. guardrails' reasoning-suppression
+    params) without duplicating the client-construction logic elsewhere.
     """
-    return ChatOpenAI(
+    return _NonReasoningChatOpenAI(
         api_key=settings.PORTKEY_API_KEY,
         base_url=PORTKEY_GATEWAY_URL,
-        model=f"@{settings.GROQ_SLUG}/openai/gpt-oss-120b",
-        temperature=0,
+        model=model or f"@{settings.GROQ_SLUG}/openai/gpt-oss-120b",
+        temperature=temperature,
+        extra_body=extra_body or {},
         default_headers=createHeaders(
             api_key=settings.PORTKEY_API_KEY,
             # config=GATEWAY_CONFIG,  # blocked: this org's keys require a saved dashboard Config, not inline JSON

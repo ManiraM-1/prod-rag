@@ -1,6 +1,6 @@
 import logfire
 from app.agents.state import AgentState
-from app.gateway import portkey_client, extract_cache_status
+from app.gateway import portkey_client, extract_cache_status, strip_reasoning
 
 
 def generate_node(state: AgentState):
@@ -24,6 +24,11 @@ def generate_node(state: AgentState):
         You are a friendly and helpful Enterprise AI Assistant.
         Answer the user's latest message using the CONVERSATION HISTORY below.
 
+        Answer directly and concisely. Do not restate the question, add
+        unnecessary preamble, or pad the response with extra elaboration
+        beyond what's needed to answer accurately. Prefer 2-5 sentences
+        unless the question genuinely requires a longer explanation.
+
         CONVERSATION HISTORY:
         {history_str}
 
@@ -46,6 +51,12 @@ def generate_node(state: AgentState):
         You are a Senior Technical Architect.
         Answer the question using the TECHNICAL CONTEXT provided.
 
+        Answer directly and concisely. Do not restate the question, add
+        unnecessary preamble, or pad the response with extra elaboration
+        beyond what's needed to answer accurately. Prefer 2-5 sentences
+        unless the question genuinely requires a longer explanation (e.g.
+        step-by-step instructions).
+
         TECHNICAL CONTEXT:
         {full_context}
 
@@ -62,7 +73,7 @@ def generate_node(state: AgentState):
                 messages=[{"role": "user", "content": prompt}],
                 temperature=0.1
             )
-            content = response.choices[0].message.content
+            content = strip_reasoning(response.choices[0].message.content)
             cache_status = extract_cache_status(response)
             is_cache_hit = cache_status == "HIT"
 
