@@ -46,7 +46,7 @@ loguru                      # Enhanced logging for Python
 portkey-ai                  # Portkey Gateway for unified LLM routing, fallbacks & observability
 
 # --- EVALUATION (EVALS) ---
-ragas                       # RAG-specific evaluation metrics (Faithfulness, Relevancy, Recall)
+ragas==0.3.9                # RAG-specific evaluation metrics (Faithfulness, Relevancy, Recall) — pinned: 0.4.x has a broken unconditional ChatVertexAI import (ragas#2745), fixed upstream fix not yet released
 deepeval                    # Pytest-compatible test runner wrapping RAGAS & safety metrics
 langfuse                    # Live production monitoring, tracing & user feedback collection
 
