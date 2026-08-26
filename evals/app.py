@@ -173,7 +173,7 @@ with tab2:
     st.markdown(
         "Sends each golden question to your **running FastAPI app** (`localhost:8000/query`). "
         "Captures the actual response, retrieved contexts, and tool called. "
-        "Responses are truncated to 300 chars to save tokens for the RAGAS judging step."
+        "Responses are truncated to 1000 chars to save tokens for the RAGAS judging step."
     )
     st.info(
         "⚠️ Make sure your FastAPI backend is running first: `uvicorn app.main:app --reload --port 8000`",

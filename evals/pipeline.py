@@ -14,7 +14,9 @@ import requests
 import logfire
 
 API_URL = "http://localhost:8000/query"
-RESPONSE_TRUNCATE = 300
+RESPONSE_TRUNCATE = 1000  # was 300 — cut concise 2-5 sentence answers off mid-sentence, leaving an incomplete
+                          # final claim that Faithfulness could never verify as supported regardless of whether
+                          # the full answer actually was grounded in the retrieved context.
 DELAY_BETWEEN_CALLS = 10   # seconds — stays within Groq RPM on the main key
 REQUEST_TIMEOUT = 120      # seconds — guardrails + LangGraph + Groq can take >60s
 

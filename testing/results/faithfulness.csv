@@ -1,0 +1,10 @@
+question,faithfulness
+How do you start Redis for a Kubernetes work queue?,0.1
+What does the parallelism field do in the Kubernetes job-wq-2 man,0.0
+What is the difference between HPA and VPA in Kubernetes?,0.0
+How do you install the Metrics Server for Kubernetes pod autoscal,0.2
+Which kubectl commands confirm that the Metrics Server is collect,0.0
+What are the valid restart policy values for a Kubernetes Job pod,1.0
+What are the completions and parallelism fields in a Kubernetes J,0.333
+Which Kubernetes API group does a Job resource belong to?,1.0
+How do you start a local Kubernetes cluster using Minikube?,1.0
