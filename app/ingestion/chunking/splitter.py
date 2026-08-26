@@ -20,7 +20,15 @@ def chunk_text(text: str, chunk_size: int = 1500) -> List[str]:
             else:
                 if current_chunk.strip():
                     chunks.append(current_chunk.strip())
-                current_chunk = p + "\n\n"
+                if len(p) >= chunk_size:
+                    # A single paragraph bigger than chunk_size on its own (no blank-line
+                    # breaks inside it) would otherwise become one unbounded chunk — hard-split
+                    # it instead of letting it pass through with no size enforcement at all.
+                    for i in range(0, len(p), chunk_size):
+                        chunks.append(p[i:i + chunk_size].strip())
+                    current_chunk = ""
+                else:
+                    current_chunk = p + "\n\n"
         
         if current_chunk.strip():
             chunks.append(current_chunk.strip())

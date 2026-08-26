@@ -49,7 +49,13 @@ def generate_node(state: AgentState):
 
         prompt = f"""
         You are a Senior Technical Architect.
-        Answer the question using the TECHNICAL CONTEXT provided.
+        Answer the question using ONLY the TECHNICAL CONTEXT provided below.
+
+        Do not fill gaps with general knowledge, training data, or plausible-
+        sounding details that aren't explicitly present in the context — if
+        the context doesn't contain a specific command, field, or value needed
+        to fully answer, say so explicitly (e.g. "the retrieved documentation
+        doesn't specify the exact command for X") rather than inventing one.
 
         Answer directly and concisely. Do not restate the question, add
         unnecessary preamble, or pad the response with extra elaboration
