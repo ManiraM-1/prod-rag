@@ -2,6 +2,12 @@
 
 A production-grade Retrieval-Augmented Generation system that answers technical documentation questions (Kubernetes, Intel hardware, enterprise networking), built around the operational concerns that separate a RAG demo from something you'd actually trust in production: a unified LLM gateway with automatic failover, a custom-engineered guardrails layer, full distributed tracing, and a real, quantitative evaluation suite, not just "it gives an answer."
 
+## Demo
+
+[![Watch the demo](https://img.youtube.com/vi/KPwb-5h6ZaY/maxresdefault.jpg)](https://youtu.be/KPwb-5h6ZaY)
+
+---
+
 ## Key Features
 
 - **Multi-Agent RAG Pipeline**: LangGraph orchestrates a planner → retriever → responder flow, routing conversational questions to memory and technical questions to retrieval, with LangGraph's checkpointer providing per-thread conversation memory.
